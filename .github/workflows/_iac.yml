@@ -42,17 +42,17 @@ jobs:
         with:
           path: ${{ github.workspace }}/src/terraform/vars/vars-defaults.yml   
 
-      - name: Setup Azure CLI
-        uses: azure/cli@v2
+      - name: Install IaC tooling
+        uses: ./.github/actions/install-dependencies
         with:
-          azcliversion: ${{ env.azure_cli_version }}
+          azure-cli: latest
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.terraform_version }}
 
-      #Note: need to use the Azure CLI to login with a certificate because the official MSFT Azure Login Action
+      # Note: need to use the Azure CLI to login with a certificate because the official MSFT Azure Login Action
       # does not support certificate authentication with a base64 encoded certificate so far.
       - name: Azure version
         run: az --version

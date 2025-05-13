@@ -1,0 +1,28 @@
+name: Install IaC tooling
+description: Ensure that the required IaC tooling is installed and available in the PATH.
+
+inputs:
+  azure-cli:
+    description: Specifies the Azure CLI version, see https://github.com/Azure/azure-cli
+    type: choice
+    default: latest
+    options:
+      - latest
+      - none
+
+runs:
+  using: composite
+  steps:
+    - name: install-prerequisites.sh
+      shell: bash
+      run: |
+        # prepare optional parameters by transforming to "===none===", if empty - as otherwise the resulting "--param1 --param2 value2" would mis-interpret "--param2" as value for "--param1"
+        # => see https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
+        azure_cli=${{ inputs.azure-cli }}
+
+        azure_cli=${azure_cli:-'===none==='}
+
+        # actual invoke
+        chmod +x $GITHUB_ACTION_PATH/*.sh
+        sudo $GITHUB_ACTION_PATH/install-prerequisites.sh \
+          --azure_cli $azure_cli \

@@ -1,3 +1,2 @@
-azure_cli_version:            2.30.0 
 terraform_version:            1.11.0
 arm_client_certificate_path:  /tmp/cert.pfx
