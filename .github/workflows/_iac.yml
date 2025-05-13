@@ -21,6 +21,13 @@ jobs:
     name: terraform ${{ inputs.command }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+    env:
+      ARM_TENANT_ID: ${{ secrets.TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      ARM_CLIENT_CERTIFICATE_PATH: /tmp/cert.pfx
+      ARM_CLIENT_CERTIFICATE_PASSWORD: ""
+      ARM_CLIENT_PFX_BASE64: ${{ secrets.ARM_CLIENT_PFX_BASE64 }}
     
     defaults:
       run:
