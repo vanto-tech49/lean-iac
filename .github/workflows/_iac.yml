@@ -1,0 +1,42 @@
+name: Terraform
+
+on:
+  workflow_call:
+    inputs:
+      command:
+        description: Either plan, apply, plan+apply or destroy from deploy-envs workflow.
+        type: string
+        required: true
+      environment:
+        description: The specific environment of the deployment.
+        type: string
+        required: true
+      working-directory:
+        description: Path to TF module to execute.
+        type: string
+        required: true
+
+jobs:
+  terraform:
+    name: terraform ${{ inputs.command }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Load default variables
+        uses: ./.github/actions/load-variables
+        with:
+          path: ${{ github.workspace }}/src/terraform/vars/vars-defaults.yml    
+            
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.11.0

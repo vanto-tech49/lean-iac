@@ -1,0 +1,20 @@
+name: deploy-envs
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: Terraform command
+        type: choice
+        options:
+          - plan
+          - plan+apply
+          - destroy
+
+jobs:
+  dev-core:
+    uses: ./.github/workflows/_iac.yml
+    with:
+      command: ${{ inputs.command }}
+      environment: dev-gwc
+      working-directory: ./src/terraform/platform/core
+    secrets: inherit

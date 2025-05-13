@@ -1,0 +1,32 @@
+name: Load variables
+description: Load YAML file content as variables
+
+inputs:
+  path:
+    description: Path of YAML file to be loaded
+    type: string
+  debug:
+    description: Add debug output during execution, therefore print variables to output
+    type: choice
+    options:
+    - none
+    - path
+    default: path
+
+runs:
+  using: composite
+  steps:
+    - name: install-prerequisites.sh
+      shell: bash
+      run: |
+        chmod +x $GITHUB_ACTION_PATH/*.sh
+        sudo $GITHUB_ACTION_PATH/install-prerequisites.sh
+
+    - name: load-variables.sh
+      shell: bash
+      run: |
+        path=${{ inputs.path }}
+        
+        source $GITHUB_ACTION_PATH/load-variables.sh \
+          --debug ${debug} \
+          --path ${path} \
