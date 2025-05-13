@@ -35,8 +35,8 @@ jobs:
         uses: ./.github/actions/load-variables
         with:
           path: ${{ github.workspace }}/src/terraform/vars/vars-defaults.yml    
-            
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.11.0
+          terraform_version: $ {{ env.terraform_version }}
