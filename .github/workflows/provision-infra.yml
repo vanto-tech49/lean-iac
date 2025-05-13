@@ -1,4 +1,4 @@
-name: deploy-envs
+name: provision-infra
 on:
   workflow_dispatch:
     inputs:
