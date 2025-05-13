@@ -40,3 +40,6 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: $ {{ env.terraform_version }}
+
+      - name: Terraform version
+        run: terraform version
