@@ -33,6 +33,7 @@ runs:
     - name: initialize-tfstatestore.sh
       shell: bash
       run: |
+        chmod +x $GITHUB_ACTION_PATH/*.sh
         $GITHUB_ACTION_PATH/initialize-tfstatestore-account.sh \
           --location ${{ inputs.location }} \
           --rgName ${{ inputs.rgName }} \
