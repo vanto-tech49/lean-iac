@@ -51,7 +51,6 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.terraform_version }}
-          run: terraform version
 
       # Note: need to use the Azure CLI to login with a certificate because the official MSFT Azure Login Action
       # does not support certificate authentication with a base64 encoded certificate so far.
@@ -61,5 +60,4 @@ jobs:
           trap "rm -f $TMP_CERT_FILE" EXIT
 
           echo "${{ secrets.ARM_CLIENT_PFX_BASE64 }}" | base64 -d > "$TMP_CERT_FILE"
-          az login --service-principal -u ${{ secrets.CLIENT_ID }} -p "$TMP_CERT_FILE" --tenant ${{ secrets.TENANT_ID }}
-          az account set --subscription ${{ secrets.SUBSCRIPTION_ID }}
+        
