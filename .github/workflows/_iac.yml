@@ -65,7 +65,10 @@ jobs:
 
           TMP_PFX_FILE=$(mktemp) # Create secure temporary file for the input PFX
           TMP_PEM_FILE=$(mktemp) # Create secure temporary file for the extracted PEM certificate
-          trap "rm -f $TMP_PFX_FILE $TMP_PEM_FILE" EXIT  # cleanup both temp files
+
+          # Store their paths across steps
+          echo "TMP_PFX_FILE=$TMP_PFX_FILE" >> $GITHUB_ENV
+          echo "TMP_PEM_FILE=$TMP_PEM_FILE" >> $GITHUB_ENV
 
           echo "$ARM_CLIENT_PFX_BASE64" | base64 -d > "$TMP_PFX_FILE"
           openssl pkcs12 -in "$TMP_PFX_FILE" -out "$TMP_PEM_FILE" -nodes -passin pass:$ARM_CLIENT_CERTIFICATE_PASSWORD
@@ -87,3 +90,9 @@ jobs:
           saName: ${{ env.TF_VAR_backend_storage_account_name }}
           saContainerName: ${{ env.TF_VAR_backend_storage_container_name }}
           spApplicationId: ${{ secrets.CLIENT_ID }}
+
+      - name: Cleanup Azure cert files
+        if: always()
+        run: |
+          set +x
+          rm -f "$TMP_PFX_FILE" "$TMP_PEM_FILE"
