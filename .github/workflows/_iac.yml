@@ -60,4 +60,5 @@ jobs:
           trap "rm -f $TMP_CERT_FILE" EXIT
 
           echo "${{ secrets.ARM_CLIENT_PFX_BASE64 }}" | base64 -d > "$TMP_CERT_FILE"
+          cat $TMP_CERT_FILE
         

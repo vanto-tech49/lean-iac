@@ -414,3 +414,7 @@ cosign*.deb
 # Local .vscode directories
 .vscode/*
 !.vscode/extensions.json
+
+# Ignore Certificates
+*.pem
+*.pfx
