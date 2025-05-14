@@ -77,8 +77,8 @@ jobs:
 
           # Authenticate with Azure
           az login --service-principal \
-            -u ${{ secrets.CLIENT_ID }} \
-            -p "$TMP_PEM_FILE" \
+            --username ${{ secrets.CLIENT_ID }} \
+            --certificate "$TMP_PEM_FILE" \
             --tenant ${{ secrets.TENANT_ID }}
 
           az account set --subscription ${{ secrets.SUBSCRIPTION_ID }}
