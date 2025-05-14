@@ -58,10 +58,31 @@ jobs:
         run: |
           set +x  # disable command echoing
 
-          TMP_CERT_FILE=$(mktemp)
-          trap "rm -f $TMP_CERT_FILE" EXIT
+          # Create secure temporary file for the input PFX
+          TMP_PFX_FILE=$(mktemp)
+          # Create secure temporary file for the extracted PEM certificate
+          TMP_PEM_FILE=$(mktemp)
 
-          echo "${{ secrets.ARM_CLIENT_PFX_BASE64 }}" | base64 -d > "$TMP_CERT_FILE"
-          az login --service-principal -u ${{ secrets.CLIENT_ID }} -p "$TMP_CERT_FILE" --tenant ${{ secrets.TENANT_ID }}
+          trap "rm -f $TMP_PFX_FILE $TMP_PEM_FILE" EXIT  # cleanup both temp files
+
+          # Decode base64-encoded PFX into temp file
+          echo "${{ secrets.ARM_CLIENT_PFX_BASE64 }}" | base64 -d > "$TMP_PFX_FILE"
+
+          # Extract the PEM certificate from the PFX
+          openssl pkcs12 \
+            -in "$TMP_PFX_FILE" \
+            -out "$TMP_PEM_FILE" \
+            -nodes \
+            -passin pass:${{ secrets.ARM_CLIENT_CERTIFICATE_PASSWORD }}
+
+          # Authenticate with Azure
+          az login --service-principal \
+            -u ${{ secrets.CLIENT_ID }} \
+            -p "$TMP_PEM_FILE" \
+            --tenant ${{ secrets.TENANT_ID }}
+
           az account set --subscription ${{ secrets.SUBSCRIPTION_ID }}
+
+          # TMP_PEM_FILE now contains the extracted PEM certificate
+          # It will be deleted at exit due to the trap
         
