@@ -1,4 +1,4 @@
 # backend
 TF_VAR_backend_location: WestEurope
-TF_VAR_backend_resource_group_name: lean-iac-tst-iac-rg-weu
-TF_VAR_backend_storage_account_name: leaniactsttfsaweu
+TF_VAR_backend_resource_group_name: rg-lean-iac-tst-weu
+TF_VAR_backend_storage_account_name: stleaniactstweu
