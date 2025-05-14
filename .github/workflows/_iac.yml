@@ -23,7 +23,6 @@ jobs:
     environment: ${{ inputs.environment }}
     env:
       ARM_TENANT_ID: ${{ secrets.TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
       ARM_CLIENT_ID: ${{ secrets.CLIENT_ID }}
       ARM_CLIENT_CERTIFICATE_PASSWORD: ""
       ARM_CLIENT_PFX_BASE64: ${{ secrets.ARM_CLIENT_PFX_BASE64 }}
@@ -74,7 +73,7 @@ jobs:
           openssl pkcs12 -in "$TMP_PFX_FILE" -out "$TMP_PEM_FILE" -nodes -passin pass:$ARM_CLIENT_CERTIFICATE_PASSWORD
 
           az login --service-principal --username $ARM_CLIENT_ID --certificate "$TMP_PEM_FILE" --tenant $ARM_TENANT_ID
-          az account set --subscription $ARM_SUBSCRIPTION_ID        
+          az account set --subscription ${{ env.TF_VAR_subscription_id }}    
 
       - name: Initialize Terraform State Store Account
         uses: ./.github/actions/initialize-tfstatestore-account
@@ -90,6 +89,23 @@ jobs:
           saName: ${{ env.TF_VAR_backend_storage_account_name }}
           saContainerName: ${{ env.TF_VAR_backend_storage_container_name }}
           spApplicationId: ${{ secrets.CLIENT_ID }}
+
+      - name: Terraform init core
+        if: inputs.working-directory == ${{ env.working_directory_core }}
+        run: |
+          #fabricate tfbackend file
+          FILENAME=${{ env.terraform_backend_filename }}
+
+          printf "environment          = \"${{ env.arm_environment }}\"\n" >> $FILENAME
+          printf "subscription_id      = \"${{ env.TF_VAR_subscription_id }}\"\n" >> $FILENAME
+          printf "resource_group_name  = \"${{ env.TF_VAR_backend_resource_group_name }}\"\n" >> $FILENAME
+          printf "storage_account_name = \"${{ env.TF_VAR_backend_storage_account_name }}\"\n" >> $FILENAME
+          printf "container_name       = \"${{ env.TF_VAR_backend_storage_container_name }}\"\n" >> $FILENAME
+          printf "key                  = \"${{ env.TF_VAR_backend_key }}\"\n" >> $FILENAME
+
+          cat $FILENAME
+
+          terraform init -backend-config=$FILENAME
 
       - name: Cleanup Azure cert files
         if: always()
