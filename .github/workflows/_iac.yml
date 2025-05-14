@@ -56,9 +56,12 @@ jobs:
       # does not support certificate authentication with a base64 encoded certificate so far.
       - name: Azure login
         run: |
+          set +x  # disable command echoing
+          
           TMP_CERT_FILE=$(mktemp)
           trap "rm -f $TMP_CERT_FILE" EXIT
 
           echo "${{ secrets.ARM_CLIENT_PFX_BASE64 }}" | base64 -d > "$TMP_CERT_FILE"
-          cat $TMP_CERT_FILE
+          az login --service-principal -u ${{ secrets.CLIENT_ID }} -p "$TMP_CERT_FILE" --tenant ${{ secrets.TENANT_ID }}
+          az account set --subscription ${{ secrets.SUBSCRIPTION_ID }}
         
