@@ -1,0 +1,32 @@
+name: Initialize Terraform State Store Container
+description: Initialize Terraform State Container, ensuring existence of required Azure resources.
+
+inputs:
+  rgName:
+    description: Resource Group Name
+    required: true
+    type: string
+  saName:
+    description: Storage Account Name
+    required: true
+    type: string
+  saContainerName:
+    description: Container Name
+    required: true
+    type: string
+  spApplicationId:
+    description: Service Principal Application ID
+    required: true
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: initialize-tfstatestore.sh
+      shell: bash
+      run: |
+        $GITHUB_ACTION_PATH/initialize-tfstatestore-container.sh \
+          --rgName ${{ inputs.rgName }} \
+          --saName ${{ inputs.saName }} \
+          --saContainerName ${{ inputs.saContainerName }} \
+          --spApplicationId ${{ inputs.spApplicationId }}

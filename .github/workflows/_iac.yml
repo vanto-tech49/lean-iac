@@ -40,7 +40,12 @@ jobs:
       - name: Load default variables
         uses: ./.github/actions/load-variables
         with:
-          path: ${{ github.workspace }}/src/terraform/vars/vars-defaults.yml   
+          path: ${{ github.workspace }}/src/terraform/vars/vars-defaults.yml
+
+      - name: Load environment-specific variables
+        uses: ./.github/actions/load-variables
+        with:
+          path: ${{ github.workspace }}/src/terraform/vars/vars-${{ inputs.environment }}.yml
 
       - name: Install IaC tooling
         uses: ./.github/actions/install-dependencies
@@ -67,3 +72,18 @@ jobs:
 
           az login --service-principal --username $ARM_CLIENT_ID --certificate "$TMP_PEM_FILE" --tenant $ARM_TENANT_ID
           az account set --subscription $ARM_SUBSCRIPTION_ID        
+
+      - name: Initialize Terraform State Store Account
+        uses: ./.github/actions/initialize-tfstatestore-account
+        with:
+          location: ${{ env.TF_VAR_backend_location }}
+          rgName: ${{ env.TF_VAR_backend_resource_group_name }}
+          saName: ${{ env.TF_VAR_backend_storage_account_name }}
+
+      - name: Initialize Terraform State Store Container
+        uses: ./.github/actions/initialize-tfstatestore-container
+        with:
+          rgName:  ${{ env.TF_VAR_backend_resource_group_name }}
+          saName: ${{ env.TF_VAR_backend_storage_account_name }}
+          saContainerName: ${{ env.TF_VAR_backend_storage_container_name }}
+          spApplicationId: ${{ secrets.CLIENT_ID }}

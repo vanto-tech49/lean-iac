@@ -1,0 +1,42 @@
+name: Initialize Terraform State Store Account
+description: Initialize Terraform State Store Account, ensuring existence of required Azure resources
+
+inputs:
+  location:
+    description: Azure location of the environment
+    required: true
+    type: string
+  rgName:
+    description: Resource Group Name
+    required: true
+    type: string
+  saName:
+    description: Storage Account Name
+    required: true
+    type: string
+  vnetRgName:
+    description: Name of resource group where the virtual network exists
+    required: true
+    type: string
+  vnetName:
+    description: Name of virtual network for created private endpoints
+    required: true
+    type: string
+  subnetName:
+    description: Name of subnet for created private endpoints
+    required: true
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - name: initialize-tfstatestore.sh
+      shell: bash
+      run: |
+        $GITHUB_ACTION_PATH/initialize-tfstatestore-account.sh \
+          --location ${{ inputs.location }} \
+          --rgName ${{ inputs.rgName }} \
+          --saName ${{ inputs.saName }} \
+          --vnetRgName ${{ inputs.vnetRgName }} \
+          --vnetName ${{ inputs.vnetName }} \
+          --subnetName ${{ inputs.subnetName }}

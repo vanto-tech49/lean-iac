@@ -11,10 +11,10 @@ on:
           - destroy
 
 jobs:
-  dev-core:
+  tst-core:
     uses: ./.github/workflows/_iac.yml
     with:
       command: ${{ inputs.command }}
-      environment: dev-gwc
+      environment: tst-gwc
       working-directory: ./src/terraform/platform/core
     secrets: inherit
