@@ -35,5 +35,5 @@ echo -e "Ensure registered provider 'Microsoft.Storage'..."
 az provider register --namespace 'Microsoft.Storage' --wait
 
 echo -e "Create/access storage account '$saName'..."
-saId=$(az storage account create --name $saName --resource-group $rgName --location $location --sku Standard_RAGRS --kind StorageV2 --default-action Deny --public-network-access Enabled --allow-shared-key-access false --min-tls-version TLS1_3 --query id --output tsv 2>/dev/null)
+saId=$(az storage account create --name $saName --resource-group $rgName --location $location --sku Standard_RAGRS --kind StorageV2 --default-action Allow --public-network-access Enabled --allow-shared-key-access false --min-tls-version TLS1_2 --query id --output tsv 2>/dev/null)
 echo -e "- Resolved full Storage Account Id: $saId"
