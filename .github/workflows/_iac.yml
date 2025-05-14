@@ -52,12 +52,12 @@ jobs:
         with:
           terraform_version: ${{ env.terraform_version }}
 
-      # Note: need to use the Azure CLI to login with a certificate because the official MSFT Azure Login Action
-      # does not support certificate authentication with a base64 encoded certificate so far.
+      # Note: need to use the Azure CLI to login with a certificate because the official 
+      # GitHub MSFT Azure Login Action does not support certificate authentication.
       - name: Azure login
         run: |
           set +x  # disable command echoing
-          
+
           TMP_CERT_FILE=$(mktemp)
           trap "rm -f $TMP_CERT_FILE" EXIT
 
