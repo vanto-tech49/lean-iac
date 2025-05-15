@@ -23,6 +23,7 @@ jobs:
     environment: ${{ inputs.environment }}
     env:
       ARM_TENANT_ID: ${{ secrets.TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.SUBSCRIPTION_ID }}
       ARM_CLIENT_ID: ${{ secrets.CLIENT_ID }}
       ARM_CLIENT_CERTIFICATE_PASSWORD: ""
       ARM_CLIENT_PFX_BASE64: ${{ secrets.ARM_CLIENT_PFX_BASE64 }}
@@ -107,20 +108,18 @@ jobs:
 
           terraform init -backend-config=$FILENAME
 
+      - name: Terraform plan
+        if: inputs.command == 'plan' || inputs.command == 'plan+apply'
+        run: |
           TFPLAN_FILE=terraform-plan-${{ inputs.environment }}-${{ github.run_id }}.tfplan
           echo "TFPLAN_FILE=$TFPLAN_FILE" >> $GITHUB_ENV
                   
           terraform plan \
             -refresh=false \
             -input=false \
-            -out ${{ github.workspace }}/$
+            -out ${{ github.workspace }}/$TFPLAN_FILE
             
           terraform show ${{ github.workspace }}/$TFPLAN_FILE >> ${{ github.workspace }}/$TFPLAN_FILE.txt}
-
-      # - name: Terraform plan
-      #   if: inputs.command == 'plan' || inputs.command == 'plan+apply'
-      #   run: |
-          
 
       - name: Cleanup Azure cert files
         if: always()
