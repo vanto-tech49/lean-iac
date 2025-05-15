@@ -107,6 +107,19 @@ jobs:
 
           terraform init -backend-config=$FILENAME
 
+      - name: Terraform plan
+        if: inputs.command == 'plan' || inputs.command == 'plan+apply'
+        run: |
+          TFPLAN_FILE=terraform-plan-${{ inputs.environment }}-${{ github.run_id }}.tfplan
+          echo "TFPLAN_FILE=$TFPLAN_FILE" >> $GITHUB_ENV
+                  
+          terraform plan \
+            -refresh=false \
+            -input=false \
+            -out ${{ github.workspace }}/$
+            
+          terraform show ${{ github.workspace }}/$TFPLAN_FILE >> ${{{ github.workspace }}/$TFPLAN_FILE.txt}
+
       - name: Cleanup Azure cert files
         if: always()
         run: |
