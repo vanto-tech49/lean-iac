@@ -118,7 +118,7 @@ jobs:
             -input=false \
             -out ${{ github.workspace }}/$
             
-          terraform show ${{ github.workspace }}/$TFPLAN_FILE >> ${{{ github.workspace }}/$TFPLAN_FILE.txt}
+          terraform show ${{ github.workspace }}/$TFPLAN_FILE >> ${{ github.workspace }}/$TFPLAN_FILE.txt}
 
       - name: Cleanup Azure cert files
         if: always()
