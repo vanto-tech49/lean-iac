@@ -1,7 +1,7 @@
 working_directory_core                  : './src/terraform/platform/core'
 arm_environment                         : public
 
-terraform_version                       : 1.11.0
+terraform_version                       : 1.11.4
 terraform_backend_filename              : azurerm.tfbackend
 
 TF_VAR_location                         : westeurope
