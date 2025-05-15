@@ -45,5 +45,3 @@ saId=$(az storage account show --name $saName --resource-group $rgName --query "
 echo -e "- Resolved storage account object id: $saId"
 spObjectId=$(az ad sp list --filter "appId eq '$spApplicationId'" --query "[0].id" -o tsv)
 echo -e "- Resolved service principal object id: $spObjectId"
-az role assignment create --role "Storage Blob Data Contributor" --assignee-principal-type ServicePrincipal --assignee-object-id $spObjectId --scope $saId/blobServices/default/containers/$saContainerName >/dev/null 2>&1
-echo -e "- Resolved role assignment"

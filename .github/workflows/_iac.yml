@@ -78,7 +78,7 @@ jobs:
       - name: Initialize Terraform State Store Account
         uses: ./.github/actions/initialize-tfstatestore-account
         with:
-          location: ${{ env.TF_VAR_backend_location }}
+          location: ${{ env.TF_VAR_location }}
           rgName: ${{ env.TF_VAR_backend_resource_group_name }}
           saName: ${{ env.TF_VAR_backend_storage_account_name }}
 
