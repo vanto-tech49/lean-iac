@@ -124,6 +124,17 @@ jobs:
             
           terraform show ${{ github.workspace }}/$TFPLAN_FILE >> ${{ github.workspace }}/$TFPLAN_FILE.txt}
 
+      - name: Terraform apply
+        if: inputs.command == 'apply' || inputs.command == 'plan+apply'
+        run: terraform apply ${{ github.workspace }}/$TFPLAN_FILE
+
+      - name: Terraform destroy
+        if: inputs.command == 'destroy'
+        run: |
+          terraform destroy \
+            -auto-approve \
+            -input=false
+
       - name: Cleanup Azure cert files
         if: always()
         run: |
