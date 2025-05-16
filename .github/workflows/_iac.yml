@@ -92,7 +92,7 @@ jobs:
           rgName:  ${{ env.TF_VAR_backend_resource_group_name }}
           saName: ${{ env.TF_VAR_backend_storage_account_name }}
           saContainerName: ${{ env.TF_VAR_backend_storage_container_name }}
-          spApplicationId: ${{ secrets.CLIENT_ID }}
+          spApplicationId: $ARM_CLIENT_ID
 
       - name: Terraform init core
         if: inputs.working-directory == ${{ env.working_directory_core }}
