@@ -10,26 +10,29 @@ This approach leverages native Terraform, modular structure, and GitHub Actions 
 
 #### 1. Terraform Workspaces
 
-Workspaces isolate state, but not code. All environments share the same Terraform configuration and module versions, making isolated testing or phased rollouts risky. You must use complex conditionals to differentiate environments, which clutters the code and introduces tight coupling.
+Workspaces isolate state, but **not code**. All environments share the same Terraform configuration and module versions, making isolated testing or phased rollouts risky. You must use complex conditionals to differentiate environments, which clutters the code and introduces tight coupling.
 
 #### 2. Separate Folders per Environment
 
-This offers separation of logic and state, but at the cost of massive duplication. You copy-paste .tf files across environments, increasing maintenance burden and the risk of drift.
+This offers separation of logic and state, but at the cost of **massive duplication**. You copy-paste .tf files across environments, increasing maintenance burden and the risk of drift.
 
 ##### 3. Third-party Wrappers (e.g., Terragrunt)
 
-While powerful, wrappers add another layer of complexity. They require version management, increase the learning curve, and may pose licensing or compliance concerns in corporate environments.
+While powerful, wrappers add another layer of complexity. They require version management, increase the learning curve, and may pose **licensing or compliance concerns** in corporate environments.
 
-## How lean-iac solves this
+## How ```lean-iac``` solves this
 
 - **Same ``.tf`` files for all environments**
 - **No workspaces, no folder duplication**
 - **No third-party dependencies**
 - **Environment-specific variables loaded via YAML**
 - **Dynamic backend configuration generated per run**
-- **Fully GitHub-native using workflow_call + workflow_dispatch**
+- **Fully GitHub-native using ``workflow_call`` + ``workflow_dispatch``**
 
 All logic is environment-aware but cleanly separated through input parameters, not conditional spaghetti. Each environment triggers the same Terraform module with different input and isolated state.
+
+> [!NOTE]
+> While all environments share the same Terraform code, deployments are fully isolated by environment. To fully decouple logic evolution (e.g. test new resources only in ``tst``), module version pinning or staged rollout patterns can be added.
 
 ## Usage
 
