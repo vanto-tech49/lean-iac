@@ -36,9 +36,34 @@ All logic is environment-aware but cleanly separated through input parameters, n
 
 ## Usage
 
+### Prerequisites
+
+Before running the workflow, ensure the following **GitHub environment secrets are configured**:
+
+```bash
+ARM_TENANT_ID                   # Azure AD tenant ID
+ARM_SUBSCRIPTION_ID             # Azure subscription ID
+ARM_CLIENT_ID                   # Azure service principal client ID
+ARM_CLIENT_CERTIFICATE_PASSWORD # Optional password for the PFX, can be left empty
+ARM_CLIENT_PFX_BASE64           # Base64-encoded .pfx certificate used for SPN authentication
+```
+
+> [!NOTE]
+> Setting ``ARM_SUBSCRIPTION_ID`` here avoids the need to hardcode the subscription ID in the Terraform provider blocks.
+
+### Convert PFX to base64
+
+If you have a ``.pfx`` certificate file and want to store it as a GitHub secret, convert it to base64 using:
+
+```bash
+base64 -i certificate.pfx | tr -d '\n' > cert.pfx.b64
+```
+
+Then copy the content of ``cert.pfx.b64`` and add it as a secret (``ARM_CLIENT_PFX_BASE64``) in your GitHub environment settings.
+
 This setup assumes your Terraform modules live under ``src/terraform`` and are driven by a calling workflow.
 
-## Trigger workflow
+### Trigger workflow
 
 ```bash
 # .github/workflows/provision-infra.yml
@@ -64,7 +89,7 @@ jobs:
     secrets: inherit
 ```
 
-## Core logic
+### Core logic
 
 ```bash
 # .github/workflows/_iac.yml
@@ -91,7 +116,7 @@ jobs:
 
 See full examples in ``.github/workflows/``.
 
-## Folder structure
+### Folder structure
 
 ```bash
 src/terraform
