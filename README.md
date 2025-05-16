@@ -89,7 +89,7 @@ jobs:
   run: terraform ${{ inputs.command }} [...]
 ```
 
-See full examples in .github/workflows/.
+See full examples in ``.github/workflows/``.
 
 ## Folder structure
 
