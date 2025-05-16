@@ -1,53 +1,109 @@
 # lean-iac
 
-## Overview
+``lean-iac`` is a practical, minimalistic Infrastructure as Code (IaC) framework designed to reduce operational overhead and enable DRY, scalable Terraform deployments across multiple cloud environments.
 
-The `lean-iac` repository is designed to provide a modular and centralized Infrastructure as Code (IaC) framework. It aims to streamline the provisioning and management of infrastructure components, ensuring consistency, reusability, and automation.
+This approach leverages native Terraform, modular structure, and GitHub Actions to orchestrate infrastructure changes across environments like ``tst``, ``int``, and ``prd``—**without using workspaces, duplicated folders, or third-party wrappers like Terragrunt**.
 
-## Purpose
+## Why ``lean-iac``?
 
-- **Modularity**: Break down infrastructure into reusable modules for better organization and maintainability.
-- **Automation**: Leverage GitHub Actions for automated deployments and CI/CD workflows.
-- **Scalability**: Create a robust framework that supports rapid growth and adapts to changing requirements.
+### The problem with common multi-environment strategies
 
-## Defining a robust base
+#### 1. Terraform Workspaces
 
-### .gitattributes
+Workspaces isolate state, but not code. All environments share the same Terraform configuration and module versions, making isolated testing or phased rollouts risky. You must use complex conditionals to differentiate environments, which clutters the code and introduces tight coupling.
 
-The usage of the ```.gitattributes``` file is mainly based on the  because of Cross-Platofrm Development. Different operating systems use different line-ending conventions (LF for Linux/macOS, CRLF for Windows). Without ```.gitattributes```, inconsistent line endings can cause issues when collaborating across platforms.
+#### 2. Separate Folders per Environment
 
-If a developer on Windows commits a file with CRLF line endings, and another developer on Linux checks it out, the ```.gitattributes``` file ensures that the line endings are normalized to LF in the repository and converted back to the appropriate format on checkout.
-This helps maintain consistency and avoids issues like unnecessary diffs caused by line-ending mismatches.
+This offers separation of logic and state, but at the cost of massive duplication. You copy-paste .tf files across environments, increasing maintenance burden and the risk of drift.
 
-### .gitignore
+##### 3. Third-party Wrappers (e.g., Terragrunt)
 
-As the filename already suggests, the ```.gitignore```file is a simple way to tell **git** to not include certain files. This helps to exluce not relevant information or files which not belong to a central source code control system. These can be build results or temporarly or OS specfic files.
+While powerful, wrappers add another layer of complexity. They require version management, increase the learning curve, and may pose licensing or compliance concerns in corporate environments.
 
-In this specific **IaC using Terraform** example, we ignore the **.terraform** folder which contains the local state information as we exclusively want to store the state in a remote storage.
+## How lean-iac solves this
 
-## Repository Structure
+- **Same ``.tf`` files for all environments**
+- **No workspaces, no folder duplication**
+- **No third-party dependencies**
+- **Environment-specific variables loaded via YAML**
+- **Dynamic backend configuration generated per run**
+- **Fully GitHub-native using workflow_call + workflow_dispatch**
 
-```plaintext
-lean-iac
-|__ .github
-|   |__ workflows          # CI/CD workflows for Terraform commands and deployments
-|   |__ actions            # Shell scripts for pre- or post-deployments
-|__ src
-|   |__ terraform
-|   |   |__ platform
-|   |   |   |__ core        # Core infrastructure definitions
-|   |   |   |__ bootstrap   # Bootstrapping essential services (e.g., ArgoCD, NGINX)
-|   |   |__ modules         # Terraform resourse implementations
-|   |   |__ vars            # Environment-specific configurations
+All logic is environment-aware but cleanly separated through input parameters, not conditional spaghetti. Each environment triggers the same Terraform module with different input and isolated state.
+
+## Usage
+
+This setup assumes your Terraform modules live under ``src/terraform`` and are driven by a calling workflow.
+
+## Trigger workflow
+
+```bash
+# .github/workflows/provision-infra.yml
+name: provision-infra
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: Terraform command
+        type: choice
+        options:
+          - plan
+          - plan+apply
+          - destroy
+
+jobs:
+  tst-core:
+    uses: ./.github/workflows/_iac.yml
+    with:
+      command: ${{ inputs.command }}
+      environment: tst-gwc
+      working-directory: ./src/terraform/platform/core
+    secrets: inherit
 ```
 
+## Core logic
 
+```bash
+# .github/workflows/_iac.yml
+- name: Load environment-specific variables
+  uses: ./.github/actions/load-variables
+  with:
+    path: ${{ github.workspace }}/src/terraform/vars/vars-${{ inputs.environment }}.yml
 
-## Getting Started
+- name: Terraform init
+  run: |
+    # Generate backend config dynamically
+   printf "environment          = \"${{ env.arm_environment }}\"\n" >> $FILENAME
+   printf "subscription_id      = \"${{ env.TF_VAR_subscription_id }}\"\n" >> $FILENAME
+   printf "resource_group_name  = \"${{ env.TF_VAR_backend_resource_group_name }}\"\n" >> $FILENAME
+   printf "storage_account_name = \"${{ env.TF_VAR_backend_storage_account_name }}\"\n" >> $FILENAME
+   printf "container_name       = \"${{ env.TF_VAR_backend_storage_container_name }}\"\n" >> $FILENAME
+   printf "key                  = \"${{ env.TF_VAR_backend_key }}\"\n" >> $FILENAME
+   
+   terraform init -backend-config=backend.tfvars
 
-1. **Clone the Repository**:
+- name: Terraform plan/apply/destroy
+  run: terraform ${{ inputs.command }} [...]
+```
 
-   ```bash
-   git clone <repository-url>
-   cd lean-iac
+See full examples in .github/workflows/.
 
+## Folder structure
+
+```bash
+src/terraform
+├── platform
+│   └── core
+│       ├── main.tf
+│       └── variables.tf
+├── vars
+│   ├── vars-defaults.yml
+│   └── vars-tst-gwc.yml
+```
+
+## Key Benefits
+
+- Works in **any CI/CD** but is optimized for GitHub Actions
+- Eliminates workspaces and their limitations
+- Keeps infrastructure modular, composable, and testable
+- Reduces risk of misconfiguration and simplifies rollout pipelines
