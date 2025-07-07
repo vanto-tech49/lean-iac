@@ -1,0 +1,79 @@
+## Argo CD configuration
+## Ref: https://github.com/argoproj/argo-cd
+##
+
+#https://github.com/argoproj/argo-helm/blob/main/charts/argo-cd/values.yaml
+
+#Note: Before 'helm apply' is called the placeholders (e.g. '[dollar]{env}') are replaced with the appropriate environment-specific variable.
+
+# ---Custom resource configuration
+crds:
+  install: true       # Let Helm install ArgoCD to keep the automation smooth; otherwise its CRDs must be created beforehand.
+  keep: true          # Ensure Helm does not delete the CRDs when ArgoCD is uninstalled - so the Applications and Projects are preseved.
+  repo.refresh: 60s   # Let Argo poll every 60s the repository to check for changes.
+
+# --- Global Settings
+global:
+  domain: localhost   # Used by SSO, ingress, and notifications
+
+# --- Configuration
+configs:
+  # SSH known hosts for Git repositories
+  ## Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#ssh-known-host-public-keys
+  ssh:
+    ## 'ssh-keyscan github.com'
+    knownHosts: |
+      github.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+VTTvDP6mHBL9j1aNUkY4Ue1gvwnGLVlOhGeYrnZaMgRK6+PKCUXaDbC7qtbW8gIkhL7aGCsOr/C56SJMy/BCZfxd1nWzAOxSDPgVsmerOBYfNqltV9/hWCqBywINIR+5dIg6JTJ72pcEpEjcYgXkE2YEFXV1JHnsKgbLWNlhScqb2UmyRkQyytRLtL+38TGxkxCflmO+5Z8CSSNY7GidjMIZ7Q4zMjA2n1nGrlTDkzwDCsw+wqFPGQA179cnfGWOWRVruj16z6XyvxvjJwbz0wQZ75XK5tKSb7FNyeIEs4TT4jk+S4dhPeAUC5y+bDYirYgM4GC7uEnztnZyaVWQ7B381AK4Qdrwt51ZqExKbQpTUNn+EjqoTwvqNj4kqx5QUCI0ThS/YkOxJCXmPUWZbhjpCg56i+2aB6CmK2JGhn57K5mj0MNdBXA4/WnwH6XoPWJzK5Nyu2zB3nAZp+S5hpQs+p1vN1/wsjk=
+      github.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
+
+  # -- Repository credentials to be used as Templates for other repos
+  # Creates a secret for each key/value specified below to create repository credentials
+  credentialTemplates:
+    github-app-creds:
+      url: ${githubOrgUrl}
+      githubAppID: "${githubAppID}"
+      githubAppInstallationID: "${githubAppInstallationID}"
+      githubAppPrivateKey: |
+        ${indent(8, githubAppPrivateKey)}
+
+  # -- Repositories list to be used by applications
+  ## Creates a secret for each key/value specified below to create repositories
+  ## Note: the last example in the list would use a repository credential template, configured under "configs.credentialTemplates".
+  repositories:
+    gitops-git-repo:
+      url: ${gitops-git-repo}
+
+  # Argo CD sensitive data
+  # Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/user-management/#sensitive-data-and-sso-client-secrets
+  secret:
+    # -- Bcrypt hashed admin password
+    ## Argo expects the password in the secret to be bcrypt hashed. You can create this hash with
+    ## `htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'`
+    argocdServerAdminPassword: ${argo-server-pwd}
+
+## Server
+server:
+  ingress:
+    # -- Enable an ingress resource for the Argo CD server
+    enabled: true
+    # -- Specific implementation for ingress controller. One of `generic`, `aws` or `gke`
+    ## Additional configuration might be required in related configuration sections
+    controller: generic
+    # -- Additional ingress labels
+    labels: {}
+    # -- Additional ingress annotations
+    ## Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/#option-1-ssl-passthrough
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+
+    # -- Defines which ingress controller will implement the resource
+    ingressClassName: nginx
+
+    # -- Ingress path type. One of `Exact`, `Prefix` or `ImplementationSpecific`
+    pathType: Prefix
+
+    # -- Enable TLS configuration for the hostname defined at `server.ingress.hostname`
+    ## TLS certificate will be retrieved from a TLS secret `argocd-server-tls`
+    ## You can create this secret via `certificate` or `certificateSecret` option
+    tls: true

@@ -425,3 +425,9 @@ cosign*.deb
 # Ignore Certificates
 *.pem
 *.pfx
+
+# Ignore bootstrap specific kubeconfig file
+kube_config_cluster.yml
+
+# Ignore runtime specific credentials
+argocd.txt
